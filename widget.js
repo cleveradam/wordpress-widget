@@ -1,5 +1,5 @@
 (() => {
-  // version 1.1.6
+  // version 1.1.7
   const adamApiUrl =
     "https://[INSERT_YOUR_PLATFORM_SLUG].cleveradam.io/api/integrations/wordpress/projects?locale=da";
 
@@ -21,13 +21,13 @@
       type: "number",
     },
     {
-      path: "funding._roi",
-      type: "number",
+      path: "funding.return",
+      type: "percentage",
     },
     {
-      path: "funding._price_per_share",
+      path: "funding.currency",
       type: "string",
-    },
+    }
   ];
 
   const styles = `
@@ -138,7 +138,7 @@
           doIfPossible(
             newItem.querySelector(selectors.targetMin),
             (obj) =>
-              (obj.innerText = obj.innerText.replace(
+              (obj.innerText = obj.innerText.replaceAll(
                 "{{funding.target_min}}",
                 new Intl.NumberFormat(locale).format(data.funding.target_min)
               ))
@@ -149,11 +149,17 @@
               tableContent.forEach((content) => {
                 const value = getPath(data, content.path);
                 if (value === undefined) return;
+                
+                const numberConfig = content?.type === "percentage" ? {
+                     style: 'percent',
+                     minimumFractionDigits: 2,
+                     maximumFractionDigits: 2
+                  } : {};
 
-                obj.innerHTML = obj.innerHTML.replace(
+                newItem.innerHTML = newItem.innerHTML.replaceAll(
                   `{{${content.path}}}`,
-                  content.type === "number"
-                    ? new Intl.NumberFormat(locale).format(value)
+                  content.type === "number" || content.type === "percentage"
+                    ? new Intl.NumberFormat(locale, numberConfig).format(value)
                     : value
                 );
               });
